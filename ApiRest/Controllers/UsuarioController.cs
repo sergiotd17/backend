@@ -60,22 +60,23 @@ public class UsuarioController : Microsoft.AspNetCore.Mvc.Controller
     {
         try
         {
-            var user = _mapper.Map<Usuario>(userDto);
-            if (id != user.Id)
-            {
-                return BadRequest("Las id no coinciden");
-            }
+            
             if (userDto.Password.IsNullOrEmpty())
             {
+
                 var oldUser = await _usuarioService.FindById(userDto.Id);
-                user.Password = oldUser.Password;
+                userDto.Password = oldUser.Password;
+                var user = _mapper.Map<Usuario>(userDto);
+                await _usuarioService.Update(user);
             }
             else
             {
+                var user = _mapper.Map<Usuario>(userDto);
                 var newpass = BCrypt.Net.BCrypt.HashPassword(userDto.Password);
                 user.Password = newpass;
+                await _usuarioService.Update(user);
             }
-            await _usuarioService.Update(user);
+            
             return Ok("Usuario actualizado");
         }
         catch (Exception e)
