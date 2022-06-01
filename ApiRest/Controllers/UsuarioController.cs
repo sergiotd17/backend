@@ -47,6 +47,7 @@ public class UsuarioController : Microsoft.AspNetCore.Mvc.Controller
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "gerente")]
     public async Task<UsuarioDTO> CreateUser(UsuarioCreationDTO userDto)
     {
+
         var user = _mapper.Map<Usuario>(userDto);
         user = await _usuarioService.Save(user);
 
@@ -68,6 +69,11 @@ public class UsuarioController : Microsoft.AspNetCore.Mvc.Controller
             {
                 var oldUser = await _usuarioService.FindById(userDto.Id);
                 user.Password = oldUser.Password;
+            }
+            else
+            {
+                var newpass = BCrypt.Net.BCrypt.HashPassword(userDto.Password);
+                user.Password = newpass;
             }
             await _usuarioService.Update(user);
             return Ok("Usuario actualizado");
